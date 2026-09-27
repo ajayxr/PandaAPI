@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.RateLimiting;
 using PandaAPI.Middleware;
+using PandaAPI.Services;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<CpfService>();
 builder.Services.AddAuthorization();
 builder.Services.AddOpenApi(options =>
 {
