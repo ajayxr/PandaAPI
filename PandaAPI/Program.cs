@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using PandaAPI.Middleware;
 using PandaAPI.Services;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +49,17 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+});
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
+app.UseHttpsRedirection();
 
 app.MapStaticAssets();
 
@@ -62,7 +73,6 @@ if (enableSwagger)
         options.SwaggerEndpoint("/openapi/v1.json", "PandaAPI v1"));
 }
 
-app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
