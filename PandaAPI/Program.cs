@@ -50,6 +50,8 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+app.MapStaticAssets();
+
 var enableSwagger = app.Environment.IsDevelopment() ||
                     builder.Configuration.GetValue<bool>("EnableSwagger");
 
