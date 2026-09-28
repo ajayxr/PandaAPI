@@ -74,7 +74,7 @@ if (builder.Configuration.GetValue<bool>("ApplyMigrations"))
 
     await db.Database.MigrateAsync();
 }
-
+ 
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 
