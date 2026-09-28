@@ -8,11 +8,12 @@ namespace PandaAPI.Controllers
     [EnableRateLimiting("default")]
     [ApiController]
     [Route("validate")]
-    public class ValidateController : ControllerBase
+    [Tags("Validation")]
+    public class ValidationController : ControllerBase
     {
         private readonly CpfService _cpfService;
         
-        public ValidateController(CpfService cpfService)
+        public ValidationController(CpfService cpfService)
         {
             _cpfService = cpfService;
         }

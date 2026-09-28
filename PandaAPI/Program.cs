@@ -5,6 +5,7 @@ using PandaAPI.Middleware;
 using PandaAPI.Services;
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.HttpOverrides;
+using PandaAPI.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<CpfService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddAuthorization();
 builder.Services.AddOpenApi(options =>
 {
