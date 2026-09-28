@@ -1,8 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using PandaAPI.Data;
 using Microsoft.AspNetCore.RateLimiting;
 using PandaAPI.Middleware;
 using PandaAPI.Services;
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.HttpOverrides;
+using PandaAPI.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<CpfService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddAuthorization();
 builder.Services.AddOpenApi(options =>
 {
@@ -39,16 +43,6 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("default", config =>
-    {
-        config.PermitLimit = 30;
-        config.Window = TimeSpan.FromMinutes(1);
-        config.QueueLimit = 0;
-    });
-});
-
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
@@ -56,8 +50,25 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
         ForwardedHeaders.XForwardedProto;
 });
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não foi encontrada.");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddRateLimiting(builder.Configuration);
+
 var app = builder.Build();
 
+if (builder.Configuration.GetValue<bool>("ApplyMigrations"))
+{
+    using var scope = app.Services.CreateScope();
+
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    await db.Database.MigrateAsync();
+}
+ 
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 
@@ -76,6 +87,7 @@ if (enableSwagger)
 app.UseRateLimiter();
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
-app.MapControllers().RequireRateLimiting("default");
+
+app.MapControllers();
 
 app.Run();
