@@ -66,6 +66,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+if (builder.Configuration.GetValue<bool>("ApplyMigrations"))
+{
+    using var scope = app.Services.CreateScope();
+
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    await db.Database.MigrateAsync();
+}
+
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 
