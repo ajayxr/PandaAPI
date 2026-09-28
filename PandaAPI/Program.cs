@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using PandaAPI.Data;
 using Microsoft.AspNetCore.RateLimiting;
 using PandaAPI.Middleware;
 using PandaAPI.Services;
@@ -55,6 +57,12 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
         ForwardedHeaders.XForwardedFor |
         ForwardedHeaders.XForwardedProto;
 });
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não foi encontrada.");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
