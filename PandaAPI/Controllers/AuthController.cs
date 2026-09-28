@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PandaAPI.DTOs.Auth;
 using PandaAPI.Interfaces;
 
 namespace PandaAPI.Controllers
 {
 
+    [EnableRateLimiting("register")]
     [ApiController]
     [Route("auth")]
     [Tags("Authentication")]

@@ -43,16 +43,6 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-builder.Services.AddRateLimiter(options =>
-{
-    options.AddFixedWindowLimiter("default", config =>
-    {
-        config.PermitLimit = 30;
-        config.Window = TimeSpan.FromMinutes(1);
-        config.QueueLimit = 0;
-    });
-});
-
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
@@ -65,6 +55,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+builder.Services.AddRateLimiting(builder.Configuration);
 
 var app = builder.Build();
 
@@ -95,6 +87,7 @@ if (enableSwagger)
 app.UseRateLimiter();
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
-app.MapControllers().RequireRateLimiting("default");
+
+app.MapControllers();
 
 app.Run();

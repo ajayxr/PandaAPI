@@ -5,7 +5,7 @@ using PandaAPI.Services;
 namespace PandaAPI.Controllers
 {
 
-    [EnableRateLimiting("default")]
+    [EnableRateLimiting("validate")]
     [ApiController]
     [Route("validate")]
     [Tags("Validation")]
