@@ -6,6 +6,10 @@ using PandaAPI.Services;
 using Microsoft.OpenApi;
 using Microsoft.AspNetCore.HttpOverrides;
 using PandaAPI.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using PandaAPI.Configuration;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +19,36 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<CpfService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddAuthorization();
+
+var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);
+var jwtOptions = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
+
+if (string.IsNullOrWhiteSpace(jwtOptions.Issuer) ||
+    string.IsNullOrWhiteSpace(jwtOptions.Audience) ||
+    Encoding.UTF8.GetByteCount(jwtOptions.SecretKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Configure Jwt:Issuer, Jwt:Audience e Jwt:SecretKey; o segredo deve possuir ao menos 32 bytes.");
+}
+
+builder.Services.Configure<JwtOptions>(jwtSection);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+            ValidateLifetime = true, 
+            RequireExpirationTime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer((document, _, _) =>
@@ -85,6 +119,7 @@ if (enableSwagger)
 }
 
 app.UseRateLimiter();
+app.UseAuthentication();
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
 
