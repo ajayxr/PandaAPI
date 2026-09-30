@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="PandaAPI.Tests/PandaAPI.Tests.csproj" />
   <Project Path="PandaAPI/PandaAPI.csproj" />
 </Solution>
