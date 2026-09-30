@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 using PandaAPI.Services;
 
 namespace PandaAPI.Controllers
 {
 
     [EnableRateLimiting("validate")]
+    [Authorize]
     [ApiController]
     [Route("validate")]
     [Tags("Validation")]

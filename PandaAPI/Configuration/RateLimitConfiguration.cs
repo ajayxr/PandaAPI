@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 namespace PandaAPI.Middleware;
 
@@ -20,6 +21,9 @@ public static class RateLimitConfiguration
         var validateWindow =
             configuration.GetValue<int>("Rate_Limit_Validate_Window_Seconds");
 
+        var loginLimit = configuration.GetValue<int>("Rate_Limit_Login");
+        var loginWindow = configuration.GetValue<int>("Rate_Limit_Login_Window_Seconds");
+
         services.AddRateLimiter(options =>
         {
             options.AddFixedWindowLimiter("register", config =>
@@ -35,6 +39,17 @@ public static class RateLimitConfiguration
                 config.Window = TimeSpan.FromSeconds(validateWindow);
                 config.QueueLimit = 0;
             });
+
+            options.AddPolicy("login", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = loginLimit,
+                        Window = TimeSpan.FromSeconds(loginWindow),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
         });
     }
 }
