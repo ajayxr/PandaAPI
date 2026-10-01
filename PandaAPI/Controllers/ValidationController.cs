@@ -13,26 +13,37 @@ namespace PandaAPI.Controllers
     [Tags("Validation")]
     public class ValidationController : ControllerBase
     {
-        private readonly CpfService _cpfService;
-        
-        public ValidationController(CpfService cpfService)
-        {
-            _cpfService = cpfService;
-        }
-
         [HttpGet("cpf/{cpf}")]
         public IActionResult ValidateCpf(string cpf)
         {
-            var cpfNormalizado = _cpfService.Normalize(cpf);
-
-            if (!_cpfService.IsNumeric(cpfNormalizado) || cpfNormalizado.Length != 11)
+            if (!CpfValidator.IsValid(cpf))
             {
-                return BadRequest("CPF deve conter apenas números.");
+                return BadRequest("CPF inválido.");
             }
+
+            var cpfNormalizado = CpfValidator.Normalize(cpf);
+
             return Ok(new
             {
-                Message = "CPF válido",
+                Message = "CPF válido.",
                 Cpf = cpfNormalizado
+            });
+        }
+
+        [HttpGet("cnpj/{cnpj}")]
+        public IActionResult ValidateCnpj(string cnpj)
+        {
+            if (!CnpjValidator.IsValid(cnpj))
+            {
+                return BadRequest("CNPJ inválido.");
+            }
+
+            var cnpjNormalizado = CnpjValidator.Normalize(cnpj);
+
+            return Ok(new
+            {
+                Message = "CNPJ válido.",
+                Cnpj = cnpjNormalizado
             });
         }
     }

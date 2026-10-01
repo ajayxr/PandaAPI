@@ -16,7 +16,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-builder.Services.AddScoped<CpfService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddAuthorization();
 
@@ -57,19 +56,19 @@ builder.Services.AddOpenApi(options =>
         var schemes = components.SecuritySchemes
             ??= new Dictionary<string, IOpenApiSecurityScheme>();
 
-        schemes.Add("ApiKey", new OpenApiSecurityScheme
+        schemes.Add("Bearer", new OpenApiSecurityScheme
         {
-            Type = SecuritySchemeType.ApiKey,
-            Name = "X-Api-Key",
-            In = ParameterLocation.Header,
-            Description = "Digite sua chave de API."
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Informe o token JWT gerado pelo endpoint de login."
         });
 
         document.Security =
         [
             new OpenApiSecurityRequirement
             {
-                [new OpenApiSecuritySchemeReference("ApiKey", document)] = []
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
             }
         ];
 
@@ -120,7 +119,6 @@ if (enableSwagger)
 
 app.UseRateLimiter();
 app.UseAuthentication();
-app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
