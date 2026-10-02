@@ -23,9 +23,15 @@ public static class RateLimitConfiguration
 
         var loginLimit = configuration.GetValue<int>("Rate_Limit_Login");
         var loginWindow = configuration.GetValue<int>("Rate_Limit_Login_Window_Seconds");
+        var healthLiveLimit = configuration.GetValue<int>("Rate_Limit_Health_Live");
+        var healthLiveWindow = configuration.GetValue<int>("Rate_Limit_Health_Live_Window_Seconds");
+        var healthReadyLimit = configuration.GetValue<int>("Rate_Limit_Health_Ready");
+        var healthReadyWindow = configuration.GetValue<int>("Rate_Limit_Health_Ready_Window_Seconds");
 
         services.AddRateLimiter(options =>
         {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
             options.AddFixedWindowLimiter("register", config =>
             {
                 config.PermitLimit = registerLimit;
@@ -47,6 +53,28 @@ public static class RateLimitConfiguration
                     {
                         PermitLimit = loginLimit,
                         Window = TimeSpan.FromSeconds(loginWindow),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
+
+            options.AddPolicy("health-live", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = healthLiveLimit,
+                        Window = TimeSpan.FromSeconds(healthLiveWindow),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
+
+            options.AddPolicy("health-ready", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = healthReadyLimit,
+                        Window = TimeSpan.FromSeconds(healthReadyWindow),
                         QueueLimit = 0,
                         AutoReplenishment = true
                     }));
