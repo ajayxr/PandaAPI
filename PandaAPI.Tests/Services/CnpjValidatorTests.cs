@@ -38,6 +38,14 @@ public class CnpjValidatorTests
     }
 
     [Theory]
+    [InlineData("37.318.313%2F0001-00", "37.318.313/0001-00")]
+    [InlineData("12ABC34501DE35", "12.ABC.345/01DE-35")]
+    public void Format_NormalizesAndAppliesCnpjMask(string cnpj, string expected)
+    {
+        Assert.Equal(expected, CnpjValidator.Format(cnpj));
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]

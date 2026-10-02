@@ -11,6 +11,14 @@ namespace PandaAPI.Services
             return decodedCnpj.Replace(".", "").Replace("/", "").Replace("-", "").Trim().ToUpperInvariant();
         }
 
+        public static string Format(string cnpj)
+        {
+            var normalizedCnpj = Normalize(cnpj);
+            return normalizedCnpj.Length == 14
+                ? $"{normalizedCnpj[..2]}.{normalizedCnpj[2..5]}.{normalizedCnpj[5..8]}/{normalizedCnpj[8..12]}-{normalizedCnpj[12..]}"
+                : cnpj;
+        }
+
         public static bool IsValid(string cnpj)
         {
             if (string.IsNullOrWhiteSpace(cnpj))
