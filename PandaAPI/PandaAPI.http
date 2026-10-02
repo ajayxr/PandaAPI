@@ -1,6 +1,29 @@
-@PandaAPI_HostAddress = http://localhost:5053
+@PandaAPI_HostAddress = https://localhost:7083
+@testEmail = usuario-teste@example.com
+@testPassword = SenhaLocalDeTeste123!
 
-GET {{PandaAPI_HostAddress}}/weatherforecast/
+### Cadastre o usuário de teste local uma única vez.
+POST {{PandaAPI_HostAddress}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Usuário de Teste",
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Faça login para obter um JWT.
+# @name login
+POST {{PandaAPI_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### Consulte os dados do CNPJ usando o token retornado pelo login.
+@accessToken = {{login.response.body.$.accessToken}}
+GET {{PandaAPI_HostAddress}}/cnpj/19131243000197
 Accept: application/json
-
-###
+Authorization: Bearer {{accessToken}}
