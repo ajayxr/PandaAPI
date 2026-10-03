@@ -13,13 +13,19 @@ using PandaAPI.Configuration;
 using System.Text;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using QuestPDF.Drawing;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+QuestPDF.Settings.License = LicenseType.Community;
+FontManager.RegisterFontFromEmbeddedResource("PandaAPI.Assets.Fonts.Arimo-Regular.ttf");
+FontManager.RegisterFontFromEmbeddedResource("PandaAPI.Assets.Fonts.Arimo-Italic.ttf");
 
 // Add services to the container.
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<CnpjPdfService>();
 builder.Services.AddOptions<CnpjAiOptions>()
     .BindConfiguration(CnpjAiOptions.SectionName)
     .Validate(options =>

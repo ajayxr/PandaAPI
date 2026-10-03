@@ -12,7 +12,7 @@ namespace PandaAPI.Controllers
     [ApiController]
     [Route("cnpj")]
     [Tags("CNPJ")]
-    public class GetCnpjController(GetCnpjService getCnpjService) : ControllerBase
+    public class GetCnpjController(GetCnpjService getCnpjService, CnpjPdfService cnpjPdfService) : ControllerBase
     {
         [HttpGet("{cnpj}")]
         public async Task<IActionResult> GetCnpj(string cnpj, CancellationToken cancellationToken)
@@ -26,6 +26,87 @@ namespace PandaAPI.Controllers
             {
                 var result = await getCnpjService.GetCnpjAsync(cnpj, cancellationToken);
                 return Ok(result);
+            }
+            catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+            {
+                return NotFound(new { message = "Estabelecimento não encontrado no cnpj.ai." });
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway,
+                    new { message = "O cnpj.ai não conseguiu atender à consulta." });
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return StatusCode(StatusCodes.Status504GatewayTimeout,
+                    new { message = "O cnpj.ai demorou para responder." });
+            }
+            catch (JsonException)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway,
+                    new { message = "O cnpj.ai retornou uma resposta inválida." });
+            }
+        }
+
+        [HttpGet("{cnpj}/pdf")]
+        public async Task<IActionResult> GetCnpjPdf(string cnpj, CancellationToken cancellationToken)
+        {
+            if (!CnpjValidator.IsValid(cnpj))
+            {
+                return BadRequest(new { message = "CNPJ inválido." });
+            }
+
+            var normalizedCnpj = CnpjValidator.Normalize(cnpj);
+
+            try
+            {
+                var result = await getCnpjService.GetCnpjAsync(normalizedCnpj, cancellationToken);
+                var pdf = cnpjPdfService.GenerateReport(result, normalizedCnpj);
+
+                return Ok(new
+                {
+                    fileName = $"cnpj-{normalizedCnpj}.pdf",
+                    contentType = "application/pdf",
+                    base64 = Convert.ToBase64String(pdf)
+                });
+            }
+            catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+            {
+                return NotFound(new { message = "Estabelecimento não encontrado no cnpj.ai." });
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway,
+                    new { message = "O cnpj.ai não conseguiu atender à consulta." });
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                return StatusCode(StatusCodes.Status504GatewayTimeout,
+                    new { message = "O cnpj.ai demorou para responder." });
+            }
+            catch (JsonException)
+            {
+                return StatusCode(StatusCodes.Status502BadGateway,
+                    new { message = "O cnpj.ai retornou uma resposta inválida." });
+            }
+        }
+
+        [HttpGet("{cnpj}/pdf/file", Name = "CnpjPdfFile")]
+        public async Task<IActionResult> GetCnpjPdfFile(string cnpj, CancellationToken cancellationToken)
+        {
+            if (!CnpjValidator.IsValid(cnpj))
+            {
+                return BadRequest(new { message = "CNPJ inválido." });
+            }
+
+            var normalizedCnpj = CnpjValidator.Normalize(cnpj);
+
+            try
+            {
+                var result = await getCnpjService.GetCnpjAsync(normalizedCnpj, cancellationToken);
+                var pdf = cnpjPdfService.GenerateReport(result, normalizedCnpj);
+
+                return File(pdf, "application/pdf", $"cnpj-{normalizedCnpj}.pdf");
             }
             catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
             {
