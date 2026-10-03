@@ -27,7 +27,7 @@ public sealed class CnpjPdfService
             page.Margin(42);
             page.PageColor(Colors.White);
             page.DefaultTextStyle(style => style
-                .FontFamily("Arial")
+                .FontFamily("Arimo")
                 .FontSize(10)
                 .FontColor(Colors.Grey.Darken3));
 
