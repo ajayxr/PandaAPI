@@ -1,9 +1,22 @@
+using System.Security.Cryptography;
+
 namespace PandaAPI.Services
 {
     public static class CnpjValidator
     {
         private static readonly int[] FirstCheckDigitWeights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
         private static readonly int[] SecondCheckDigitWeights = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        private const string AlphaNumericCharacters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        public static string GenerateNumeric()
+        {
+            return Generate(alphanumeric: false);
+        }
+
+        public static string GenerateAlphanumeric()
+        {
+            return Generate(alphanumeric: true);
+        }
 
         public static string Normalize(string cnpj)
         {
@@ -62,6 +75,24 @@ namespace PandaAPI.Services
 
             var remainder = sum % 11;
             return remainder < 2 ? 0 : 11 - remainder;
+        }
+
+        private static string Generate(bool alphanumeric)
+        {
+            string cnpj;
+            do
+            {
+                var baseCnpj = string.Concat(Enumerable.Range(0, 12)
+                    .Select(_ => alphanumeric
+                        ? AlphaNumericCharacters[RandomNumberGenerator.GetInt32(AlphaNumericCharacters.Length)]
+                        : (char)('0' + RandomNumberGenerator.GetInt32(0, 10))));
+                var firstCheckDigit = CalculateCheckDigit(baseCnpj, FirstCheckDigitWeights);
+                var secondCheckDigit = CalculateCheckDigit(baseCnpj + firstCheckDigit, SecondCheckDigitWeights);
+                cnpj = baseCnpj + firstCheckDigit + secondCheckDigit;
+            }
+            while (!IsValid(cnpj) || (alphanumeric && !cnpj[..12].Any(char.IsLetter)));
+
+            return cnpj;
         }
     }
 }

@@ -37,4 +37,16 @@ public class CpfValidatorTests
     {
         Assert.Equal("52998224725", CpfValidator.Normalize("529.982.247-25"));
     }
+
+    [Fact]
+    public void Generate_ReturnsValidCpf()
+    {
+        for (var i = 0; i < 25; i++)
+        {
+            var cpf = CpfValidator.Generate();
+
+            Assert.Equal(11, cpf.Length);
+            Assert.True(CpfValidator.IsValid(cpf));
+        }
+    }
 }
