@@ -27,8 +27,9 @@ namespace PandaAPI.Services
 
         public async Task Register(RegisterDto dto)
         {
+            var email = dto.Email.Trim().ToLowerInvariant();
             var userExists = await _context.Users
-            .AnyAsync(x => x.Email == dto.Email);
+            .AnyAsync(x => x.Email.ToLower() == email);
 
             if (userExists)
             {
@@ -38,7 +39,7 @@ namespace PandaAPI.Services
             var user = new User
             {
                 Name = dto.Name,
-                Email = dto.Email,
+                Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 CreatedAt = DateTime.UtcNow
             };
