@@ -4,8 +4,8 @@ API REST desenvolvida com **ASP.NET Core** para validação de documentos brasil
 
 ## 🚀 Demo
 
-- **Production:** https://pandaapi.com.br/swagger/index.html
-- **Development:** https://dev.pandaapi.com.br/swagger/index.html
+- **Production:** https://api-pandaapi.com.br/swagger/index.html
+- **Development:** https://dev-api.pandaapi.com.br/swagger/index.html
 
 ## 🛠️ Tecnologias
 
