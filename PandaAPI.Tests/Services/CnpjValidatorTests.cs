@@ -53,4 +53,32 @@ public class CnpjValidatorTests
     {
         Assert.False(CnpjValidator.IsValid(cnpj!));
     }
+
+    [Fact]
+    public void GenerateNumeric_ReturnsValidNumericCnpj()
+    {
+        for (var i = 0; i < 25; i++)
+        {
+            var cnpj = CnpjValidator.GenerateNumeric();
+
+            Assert.Equal(14, cnpj.Length);
+            Assert.All(cnpj, character => Assert.InRange(character, '0', '9'));
+            Assert.True(CnpjValidator.IsValid(cnpj));
+        }
+    }
+
+    [Fact]
+    public void GenerateAlphanumeric_ReturnsValidCnpjContainingLetters()
+    {
+        for (var i = 0; i < 25; i++)
+        {
+            var cnpj = CnpjValidator.GenerateAlphanumeric();
+
+            Assert.Equal(14, cnpj.Length);
+            Assert.Contains(cnpj, char.IsLetter);
+            Assert.All(cnpj[..12], character => Assert.True(char.IsAsciiLetterUpper(character) || char.IsAsciiDigit(character)));
+            Assert.All(cnpj[12..], character => Assert.InRange(character, '0', '9'));
+            Assert.True(CnpjValidator.IsValid(cnpj));
+        }
+    }
 }

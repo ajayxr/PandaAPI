@@ -1,7 +1,25 @@
-﻿namespace PandaAPI.Services
+﻿using System.Security.Cryptography;
+
+namespace PandaAPI.Services
 {
     public static class CpfValidator
     {
+        public static string Generate()
+        {
+            string cpf;
+            do
+            {
+                var firstNineDigits = string.Concat(Enumerable.Range(0, 9)
+                    .Select(_ => RandomNumberGenerator.GetInt32(0, 10)));
+                var firstCheckDigit = CalculateCheckDigit(firstNineDigits);
+                var secondCheckDigit = CalculateCheckDigit(firstNineDigits + firstCheckDigit);
+                cpf = firstNineDigits + firstCheckDigit + secondCheckDigit;
+            }
+            while (!IsValid(cpf));
+
+            return cpf;
+        }
+
         public static string Normalize(string cpf)
         {
             return cpf.Replace(".", "").Replace("-", "");
