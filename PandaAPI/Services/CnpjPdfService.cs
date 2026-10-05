@@ -10,6 +10,8 @@ namespace PandaAPI.Services;
 public sealed class CnpjPdfService
 {
     private static readonly CultureInfo PortugueseCulture = CultureInfo.GetCultureInfo("pt-BR");
+    private static readonly Color BrandGreen = Color.FromHex("#5B683D");
+    private static readonly Color BrandLime = Color.FromHex("#C5F36A");
 
     public byte[] GenerateReport(JsonElement providerData, string cnpj)
     {
@@ -74,29 +76,29 @@ public sealed class CnpjPdfService
                     brand.Item().Text("PANDA API")
                         .FontSize(10)
                         .Bold()
-                        .FontColor(Colors.Blue.Darken2)
+                        .FontColor(Colors.Black)
                         .LetterSpacing(1);
                     brand.Item().PaddingTop(10).Text("Relatório cadastral")
                         .FontSize(22)
                         .Bold()
-                        .FontColor(Colors.Grey.Darken4);
+                        .FontColor(Colors.Black);
                 });
                 row.ConstantItem(175).AlignRight().AlignBottom().Column(details =>
                 {
                     details.Item().Text("CNPJ CONSULTADO")
                         .FontSize(8)
                         .Bold()
-                        .FontColor(Colors.Grey.Medium);
+                        .FontColor(Colors.Black);
                     details.Item().PaddingTop(3).Text(CnpjValidator.Format(cnpj))
                         .FontSize(11)
                         .Bold()
-                        .FontColor(Colors.Blue.Darken2);
+                        .FontColor(Colors.Black);
                 });
             });
             column.Item().PaddingTop(12).Row(row =>
             {
-                row.RelativeItem().Height(3).Background(Colors.Blue.Darken2);
-                row.ConstantItem(34).Height(3).Background(Colors.Teal.Medium);
+                row.RelativeItem().Height(3).Background(BrandGreen);
+                row.ConstantItem(34).Height(3).Background(BrandLime);
             });
             column.Item().PaddingTop(8).Text($"Emitido em {DateTimeOffset.Now.ToString("dd 'de' MMMM 'de' yyyy, HH:mm", PortugueseCulture)}")
                 .FontSize(8)
@@ -107,14 +109,14 @@ public sealed class CnpjPdfService
     private static void ComposeSection(IContainer container, ReportSection section)
     {
         container.BorderLeft(3)
-            .BorderColor(Colors.Blue.Lighten2)
+            .BorderColor(BrandLime)
             .PaddingLeft(12)
             .Column(column =>
             {
                 column.Item().PaddingBottom(5).Text(section.Title)
                     .FontSize(12)
                     .Bold()
-                    .FontColor(Colors.Blue.Darken2);
+                    .FontColor(Colors.Black);
                 column.Item().Column(fields =>
                 {
                     foreach (var field in section.Fields)
