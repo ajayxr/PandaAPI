@@ -23,6 +23,8 @@ public static class RateLimitConfiguration
 
         var loginLimit = configuration.GetValue<int>("Rate_Limit_Login");
         var loginWindow = configuration.GetValue<int>("Rate_Limit_Login_Window_Seconds");
+        var guestLimit = configuration.GetValue<int>("Rate_Limit_Guest");
+        var guestWindow = configuration.GetValue<int>("Rate_Limit_Guest_Window_Seconds");
         var healthLiveLimit = configuration.GetValue<int>("Rate_Limit_Health_Live");
         var healthLiveWindow = configuration.GetValue<int>("Rate_Limit_Health_Live_Window_Seconds");
         var healthReadyLimit = configuration.GetValue<int>("Rate_Limit_Health_Ready");
@@ -53,6 +55,17 @@ public static class RateLimitConfiguration
                     {
                         PermitLimit = loginLimit,
                         Window = TimeSpan.FromSeconds(loginWindow),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
+
+            options.AddPolicy("guest", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = guestLimit,
+                        Window = TimeSpan.FromSeconds(guestWindow),
                         QueueLimit = 0,
                         AutoReplenishment = true
                     }));

@@ -6,5 +6,6 @@ namespace PandaAPI.Interfaces
     {
         Task Register(RegisterDto dto);
         Task<LoginResponseDto?> Login(LoginDto dto);
+        Task<LoginResponseDto> Guest();
     }
 }
