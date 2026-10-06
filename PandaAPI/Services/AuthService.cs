@@ -86,5 +86,31 @@ namespace PandaAPI.Services
                 ExpiresAtUtc = expiresAtUtc
             };
         }
+
+        public async Task<LoginResponseDto> Guest()
+        {
+            var now = DateTime.UtcNow;
+            var expiresAtUtc = now.AddMinutes(5);
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Name, "Guest"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+            var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
+                claims: claims,
+                notBefore: now,
+                expires: expiresAtUtc,
+                signingCredentials: credentials);
+            return new LoginResponseDto
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                ExpiresAtUtc = expiresAtUtc
+            };
+        }
     }
 }

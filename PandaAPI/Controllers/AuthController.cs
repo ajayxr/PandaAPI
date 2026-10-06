@@ -40,5 +40,14 @@ namespace PandaAPI.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("guest")]
+        [EnableRateLimiting("guest")]
+        public async Task<IActionResult> Guest()
+        {
+            var result = await _authService.Guest();
+
+            return Ok(result);
+        }
     }
 }
