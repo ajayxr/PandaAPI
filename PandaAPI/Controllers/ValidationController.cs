@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authorization;
 using PandaAPI.Services;
+using PandaAPI.DTOs.Validation;
 
 namespace PandaAPI.Controllers
 {
@@ -13,9 +14,10 @@ namespace PandaAPI.Controllers
     [Tags("Validation")]
     public class ValidationController : ControllerBase
     {
-        [HttpGet("cpf/{cpf}")]
-        public IActionResult ValidateCpf(string cpf)
+        [HttpPost("cpf")]
+        public IActionResult ValidateCpf([FromBody] ValidateCpfDto dto)
         {
+            var cpf = dto.Cpf;
             if (!CpfValidator.IsValid(cpf))
             {
                 return BadRequest("CPF inválido.");
@@ -30,9 +32,10 @@ namespace PandaAPI.Controllers
             });
         }
 
-        [HttpGet("cnpj/{cnpj}")]
-        public IActionResult ValidateCnpj(string cnpj)
+        [HttpPost("cnpj")]
+        public IActionResult ValidateCnpj([FromBody] ValidateCnpjDto dto)
         {
+            var cnpj = dto.Cnpj;
             if (!CnpjValidator.IsValid(cnpj))
             {
                 return BadRequest("CNPJ inválido.");
