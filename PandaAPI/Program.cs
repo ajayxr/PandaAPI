@@ -26,6 +26,7 @@ FontManager.RegisterFontFromEmbeddedResource("PandaAPI.Assets.Fonts.Arimo-Italic
 builder.Services.AddControllers();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<CnpjPdfService>();
+builder.Services.AddScoped<CpfBatchValidationService>();
 builder.Services.AddOptions<CnpjAiOptions>()
     .BindConfiguration(CnpjAiOptions.SectionName)
     .Validate(options =>
@@ -105,6 +106,36 @@ builder.Services.AddOpenApi(options =>
     options.AddOperationTransformer((operation, context, _) =>
     {
         var path = context.Description.RelativePath?.TrimStart('/');
+        if (path is "cpf/validate/batch")
+        {
+            operation.Summary = "Validar CPF em lote";
+            operation.Description = "Envie um arquivo CSV ou XLSX no campo file. Tamanho máximo: 5 MB.";
+            operation.RequestBody = new OpenApiRequestBody
+            {
+                Required = true,
+                Content = new Dictionary<string, OpenApiMediaType>
+                {
+                    ["multipart/form-data"] = new OpenApiMediaType
+                    {
+                        Schema = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.Object,
+                            Required = new HashSet<string> { "file" },
+                            Properties = new Dictionary<string, IOpenApiSchema>
+                            {
+                                ["file"] = new OpenApiSchema
+                                {
+                                    Type = JsonSchemaType.String,
+                                    Format = "binary",
+                                    Description = "Arquivo .csv ou .xlsx (máximo de 5 MB)."
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        }
+
         if (path is "health/live" or "health/ready")
         {
             operation.Security = [];

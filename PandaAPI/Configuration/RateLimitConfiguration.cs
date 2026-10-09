@@ -21,6 +21,9 @@ public static class RateLimitConfiguration
         var validateWindow =
             configuration.GetValue<int>("Rate_Limit_Validate_Window_Seconds");
 
+        var cpfBatchLimit = configuration.GetValue<int>("Rate_Limit_Cpf_Batch");
+        var cpfBatchWindow = configuration.GetValue<int>("Rate_Limit_Cpf_Batch_Window_Seconds");
+
         var loginLimit = configuration.GetValue<int>("Rate_Limit_Login");
         var loginWindow = configuration.GetValue<int>("Rate_Limit_Login_Window_Seconds");
         var guestLimit = configuration.GetValue<int>("Rate_Limit_Guest");
@@ -47,6 +50,17 @@ public static class RateLimitConfiguration
                 config.Window = TimeSpan.FromSeconds(validateWindow);
                 config.QueueLimit = 0;
             });
+
+            options.AddPolicy("cpf-batch", context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = cpfBatchLimit,
+                        Window = TimeSpan.FromSeconds(cpfBatchWindow),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    }));
 
             options.AddPolicy("login", context =>
                 RateLimitPartition.GetFixedWindowLimiter(
