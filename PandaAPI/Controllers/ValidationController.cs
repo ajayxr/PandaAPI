@@ -23,12 +23,9 @@ namespace PandaAPI.Controllers
                 return BadRequest("CPF inválido.");
             }
 
-            var cpfNormalizado = CpfValidator.Normalize(cpf);
-
             return Ok(new
             {
-                Message = "CPF válido.",
-                Cpf = cpfNormalizado
+                Message = "CPF válido."
             });
         }
 
